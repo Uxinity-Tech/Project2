@@ -1,7 +1,6 @@
 import React, { useContext, useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import Table from "../components/Table";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Inventory() {
@@ -10,6 +9,7 @@ export default function Inventory() {
 
   const [editedStock, setEditedStock] = useState({});
   const [editedIds, setEditedIds] = useState({});
+  const [message, setMessage] = useState("");
 
   // Update stock inline
   const handleStockChange = (id, value) => {
@@ -44,6 +44,11 @@ export default function Inventory() {
       const { [id]: _, ...rest } = prev;
       return rest;
     });
+
+    // Show success message
+    const updatedProduct = products.find((p) => p.id === id);
+    setMessage(`✅ "${updatedProduct?.name}" updated successfully!`);
+    setTimeout(() => setMessage(""), 2000);
   };
 
   return (
@@ -52,6 +57,13 @@ export default function Inventory() {
       <div className="flex-1 p-6">
         <Navbar />
         <h2 className="text-2xl font-bold mb-4">Inventory Management</h2>
+
+        {/* Success message */}
+        {message && (
+          <div className="mb-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg shadow">
+            {message}
+          </div>
+        )}
 
         <table className="min-w-full bg-white rounded shadow-md">
           <thead>

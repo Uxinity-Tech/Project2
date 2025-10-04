@@ -20,6 +20,13 @@ export default function Billing() {
 
   // Add product to cart
   const addToCart = (product, qty) => {
+    const currentQty = cart.find(item => item.id === product.id)?.quantity || 0;
+    const remaining = product.stock - currentQty;
+    if (qty > remaining) {
+      alert(`Only ${remaining} available.`);
+      return;
+    }
+
     const exists = cart.find(item => item.id === product.id);
     if (exists) {
       setCart(
@@ -39,10 +46,12 @@ export default function Billing() {
     setCart(cart.filter(item => item.id !== productId));
   };
 
-  // Filter products
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) && p.stock > 0
-  );
+  // Filter products based on search and remaining stock
+  const filteredProducts = products.filter(p => {
+    const currentQty = cart.find(item => item.id === p.id)?.quantity || 0;
+    const remaining = p.stock - currentQty;
+    return p.name.toLowerCase().includes(searchTerm.toLowerCase()) && remaining > 0;
+  });
 
   // Totals
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -146,42 +155,46 @@ export default function Billing() {
         <div className="mb-6">
           <h3 className="font-semibold mb-2">Products:</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredProducts.map(product => (
-              <div
-                key={product.id}
-                className="border p-3 rounded flex flex-col gap-2 justify-between"
-              >
-                <div>
-                  <h4 className="font-medium">{product.name}</h4>
-                  <p>${product.price.toFixed(2)}</p>
-                  <p>Stock: {product.stock}</p>
+            {filteredProducts.map(product => {
+              const currentQty = cart.find(item => item.id === product.id)?.quantity || 0;
+              const remaining = product.stock - currentQty;
+              return (
+                <div
+                  key={product.id}
+                  className="border p-3 rounded flex flex-col gap-2 justify-between"
+                >
+                  <div>
+                    <h4 className="font-medium">{product.name}</h4>
+                    <p>${product.price.toFixed(2)}</p>
+                    <p>Available: {remaining}</p>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <select
+                      className="border px-2 py-1 rounded"
+                      defaultValue={1}
+                      id={`qty-${product.id}`}
+                    >
+                      {[...Array(remaining).keys()].map(n => (
+                        <option key={n + 1} value={n + 1}>
+                          {n + 1}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() =>
+                        addToCart(
+                          product,
+                          parseInt(document.getElementById(`qty-${product.id}`).value)
+                        )
+                      }
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                    >
+                      Add
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-2 items-center">
-                  <select
-                    className="border px-2 py-1 rounded"
-                    defaultValue={1}
-                    id={`qty-${product.id}`}
-                  >
-                    {[...Array(product.stock).keys()].map(n => (
-                      <option key={n + 1} value={n + 1}>
-                        {n + 1}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={() =>
-                      addToCart(
-                        product,
-                        parseInt(document.getElementById(`qty-${product.id}`).value)
-                      )
-                    }
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -198,36 +211,45 @@ export default function Billing() {
                   <th className="py-2 px-4">Price</th>
                   <th className="py-2 px-4">Qty</th>
                   <th className="py-2 px-4">Total</th>
+                  <th className="py-2 px-4">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {cart.map(item => (
                   <tr key={item.id} className="border-b">
                     <td className="py-2 px-4">{item.name}</td>
-                    <td className="py-2 px-4">${Number(item.price).toFixed(2)}</td>
+                    <td className="py-2 px-4">${item.price.toFixed(2)}</td>
                     <td className="py-2 px-4">{item.quantity}</td>
                     <td className="py-2 px-4">
-                      ${(Number(item.price) * item.quantity).toFixed(2)}
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </td>
+                    <td className="py-2 px-4">
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600 transition"
+                      >
+                        Remove
+                      </button>
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan="3" className="text-right font-bold py-2 px-4">
+                  <td colSpan="4" className="text-right font-bold py-2 px-4">
                     Subtotal:
                   </td>
                   <td className="py-2 px-4 font-bold">${subtotal.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td colSpan="3" className="text-right font-bold py-2 px-4">
+                  <td colSpan="4" className="text-right font-bold py-2 px-4">
                     Discount:
                   </td>
-                  <td className="py-2 px-4 font-bold">${discount.toFixed(2)}</td>
+                  <td className="py-2 px-4 font-bold">-${discount.toFixed(2)}</td>
                 </tr>
-                <tr>
-                  <td colSpan="3" className="text-right font-bold py-2 px-4">
+                <tr className="bg-green-50">
+                  <td colSpan="4" className="text-right font-bold py-2 px-4">
                     Total:
                   </td>
-                  <td className="py-2 px-4 font-bold">${total.toFixed(2)}</td>
+                  <td className="py-2 px-4 font-bold text-green-600">${total.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
@@ -242,6 +264,8 @@ export default function Billing() {
             className="border px-3 py-2 rounded w-full"
             value={discount}
             onChange={e => setDiscount(parseFloat(e.target.value) || 0)}
+            min="0"
+            step="0.01"
           />
         </div>
 
@@ -249,13 +273,15 @@ export default function Billing() {
         <div className="flex gap-4">
           <button
             onClick={completeSale}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+            disabled={!selectedCustomer || cart.length === 0}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Complete Sale
           </button>
           <button
             onClick={printBill}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            disabled={cart.length === 0}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Print Bill
           </button>
