@@ -75,13 +75,13 @@ export default function Customers() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg ring-1 ring-white/20">
                   <FaUsers className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                     Customers Management
                   </h1>
                   <p className="text-slate-600 mt-1">Manage your customer database with ease and efficiency.</p>
@@ -89,7 +89,7 @@ export default function Customers() {
               </div>
               <button
                 onClick={openAddModal}
-                className="group flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium transform hover:-translate-y-0.5"
+                className="w-full lg:w-auto group flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium transform hover:-translate-y-0.5"
               >
                 <FaUserPlus className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                 Add Customer
@@ -99,7 +99,7 @@ export default function Customers() {
 
           {/* Search Bar */}
           <div className="mb-6">
-            <div className="relative max-w-md">
+            <div className="relative w-full max-w-md">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
                 type="text"
@@ -117,19 +117,19 @@ export default function Customers() {
               <table className="min-w-full divide-y divide-slate-200/50">
                 <thead className="bg-slate-50/50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                       ID
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">
                       Email
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">
                       Phone
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -146,28 +146,30 @@ export default function Customers() {
                   ) : (
                     filteredCustomers.map((customer) => (
                       <tr key={customer.id} className="hover:bg-slate-50/50 transition-all duration-200 group">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                        <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm font-medium text-slate-900">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
                             #{customer.id}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                            {customer.name.charAt(0).toUpperCase()}
+                        <td className="px-2 sm:px-4 lg:px-6 py-3 text-sm font-semibold text-slate-900">
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                              {customer.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="truncate">{customer.name}</span>
                           </div>
-                          {customer.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 max-w-xs truncate">
+                        <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm text-slate-900 hidden sm:table-cell max-w-xs truncate">
                           <span className="text-blue-600 font-medium">{customer.email}</span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                        <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm text-slate-600 hidden md:table-cell">
                           <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                             customer.phone ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'
                           }`}>
                             {customer.phone || "N/A"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm font-medium space-x-2">
                           <button
                             onClick={() => handleEdit(customer)}
                             className="group relative p-2 rounded-lg text-blue-600 hover:text-blue-900 hover:bg-blue-50 transition-all duration-200 transform hover:scale-110"
@@ -190,8 +192,8 @@ export default function Customers() {
               </table>
             </div>
             {filteredCustomers.length > 0 && (
-              <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-200/50">
-                <p className="text-sm text-slate-600 flex items-center justify-between">
+              <div className="px-4 sm:px-6 py-4 bg-slate-50/50 border-t border-slate-200/50">
+                <p className="text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <span>Showing {filteredCustomers.length} of {customers.length} customers</span>
                   <span className="text-xs text-slate-500">Last updated: {new Date().toLocaleDateString('en-IN')}</span>
                 </p>
@@ -251,16 +253,16 @@ export default function Customers() {
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-end gap-3 p-6 border-t border-slate-200/50 bg-slate-50/50 rounded-b-2xl">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 p-6 border-t border-slate-200/50 bg-slate-50/50 rounded-b-2xl">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-6 py-3 text-slate-700 border border-slate-300/50 rounded-xl hover:bg-slate-100 transition-all duration-200 font-medium"
+                    className="w-full sm:w-auto px-6 py-3 text-slate-700 border border-slate-300/50 rounded-xl hover:bg-slate-100 transition-all duration-200 font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleAddOrEdit}
-                    className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="w-full sm:w-auto group flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {editingCustomer ? "Update" : "Add"}
                     <FaPlus className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />

@@ -103,13 +103,13 @@ export default function Products() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg ring-1 ring-white/20">
                   <FaBoxOpen className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
                     Products Management
                   </h1>
                   <p className="text-slate-600 mt-1">Manage your inventory and pricing details with precision.</p>
@@ -117,7 +117,7 @@ export default function Products() {
               </div>
               <button
                 onClick={openAddModal}
-                className="group flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-300 font-medium transform hover:-translate-y-0.5"
+                className="w-full lg:w-auto group flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-300 font-medium transform hover:-translate-y-0.5"
               >
                 <FaBoxOpen className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
                 Add Product
@@ -127,7 +127,7 @@ export default function Products() {
 
           {/* Search Bar */}
           <div className="mb-6">
-            <div className="relative max-w-md">
+            <div className="relative w-full max-w-md">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
                 type="text"
@@ -145,25 +145,25 @@ export default function Products() {
               <table className="min-w-full divide-y divide-slate-200/50">
                 <thead className="bg-slate-50/50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                       ID
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Name
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">
                       Stock
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">
                       Original Rate
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider hidden lg:table-cell">
                       Stock Value
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">
                       MRP
                     </th>
-                    <th className="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-4 lg:px-6 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -183,37 +183,39 @@ export default function Products() {
                       const isLowStock = (product.stock || 0) < 10;
                       return (
                         <tr key={product.id} className="hover:bg-slate-50/50 transition-all duration-200 group">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                          <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm font-medium text-slate-900">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
                               #{product.id}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                              {product.name.charAt(0).toUpperCase()}
+                          <td className="px-2 sm:px-4 lg:px-6 py-3 text-sm font-semibold text-slate-900">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                {product.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="truncate">{product.name}</span>
                             </div>
-                            {product.name}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 text-right">
+                          <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm text-slate-900 text-right hidden sm:table-cell">
                             <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                               isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                             }`}>
                               {product.stock || 0}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 text-right">
+                          <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-right hidden md:table-cell">
                             <FaRupeeSign className="inline w-3 h-3 text-slate-400 mr-1" />
                             {Number(product.originalRate || 0).toLocaleString('en-IN')}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600 text-right">
+                          <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm font-semibold text-emerald-600 text-right hidden lg:table-cell">
                             <FaRupeeSign className="inline w-3 h-3 text-emerald-400 mr-1" />
                             {stockValue.toLocaleString('en-IN')}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 text-right">
+                          <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm font-semibold text-slate-900 text-right hidden sm:table-cell">
                             <FaTag className="inline w-3 h-3 text-slate-400 mr-1" />
                             {Number(product.price || 0).toLocaleString('en-IN')}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center space-x-2">
+                          <td className="px-2 sm:px-4 lg:px-6 py-3 whitespace-nowrap text-sm font-medium text-center space-x-2">
                             <button
                               onClick={() => handleEdit(product)}
                               className="group relative p-2 rounded-lg text-emerald-600 hover:text-emerald-900 hover:bg-emerald-50 transition-all duration-200 transform hover:scale-110"
@@ -237,8 +239,8 @@ export default function Products() {
               </table>
             </div>
             {filteredProducts.length > 0 && (
-              <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-200/50">
-                <p className="text-sm text-slate-600 flex items-center justify-between">
+              <div className="px-4 sm:px-6 py-4 bg-slate-50/50 border-t border-slate-200/50">
+                <p className="text-sm text-slate-600 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <span>Showing {filteredProducts.length} of {products.length} products</span>
                   <span className="text-xs text-slate-500">Last updated: {new Date().toLocaleDateString('en-IN')}</span>
                 </p>
@@ -330,16 +332,16 @@ export default function Products() {
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-end gap-3 p-6 border-t border-slate-200/50 bg-slate-50/50 rounded-b-2xl">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 p-6 border-t border-slate-200/50 bg-slate-50/50 rounded-b-2xl">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-6 py-3 text-slate-700 border border-slate-300/50 rounded-xl hover:bg-slate-100 transition-all duration-200 font-medium"
+                    className="w-full sm:w-auto px-6 py-3 text-slate-700 border border-slate-300/50 rounded-xl hover:bg-slate-100 transition-all duration-200 font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleAddOrEdit}
-                    className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="w-full sm:w-auto group flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     {editingProduct ? "Update" : "Add"}
                     <FaPlus className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />

@@ -19,9 +19,14 @@ export default function Navbar() {
           </div>
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-400/20 to-emerald-400/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
+        {/* Desktop Title */}
         <div className="hidden sm:block">
           <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Market CRM</h1>
           <p className="text-xs lg:text-sm text-slate-500 font-medium">Supermarket Management</p>
+        </div>
+        {/* Mobile Title */}
+        <div className="sm:hidden">
+          <h1 className="text-lg font-bold text-slate-900">Market CRM</h1>
         </div>
       </div>
 
@@ -104,11 +109,6 @@ export default function Navbar() {
           </div>
         </div>
       )}
-
-      {/* Hide title on mobile */}
-      <div className="sm:hidden flex items-center gap-2">
-        <h1 className="text-lg font-bold text-slate-900">Market CRM</h1>
-      </div>
     </nav>
   );
 }
