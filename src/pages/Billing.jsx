@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
-import { FaUser, FaSearch, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaCalculator, FaPrint, FaCheckCircle, FaTicketAlt } from "react-icons/fa";
+import { FaUser, FaSearch,FaChevronDown, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaCalculator, FaPrint, FaCheckCircle, FaTicketAlt, FaExclamationTriangle } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Billing() {
@@ -186,15 +186,26 @@ export default function Billing() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Navbar />
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900">Billing & POS</h1>
-            <p className="text-slate-600 mt-1">Process sales efficiently with real-time inventory tracking.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg ring-1 ring-white/20">
+                  <FaTicketAlt className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                    Billing & POS
+                  </h1>
+                  <p className="text-slate-600 mt-1">Process sales efficiently with real-time inventory tracking.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Customer Selection */}
@@ -203,31 +214,44 @@ export default function Billing() {
               <button
                 onClick={() => setShowCustomerSelect(!showCustomerSelect)}
                 disabled={isProcessing}
-                className="flex items-center gap-2 w-full max-w-sm px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group flex items-center gap-3 w-full max-w-sm px-4 py-3 border border-slate-300/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white/80 backdrop-blur-sm hover:bg-slate-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <FaUser className="w-4 h-4 text-slate-400" />
-                {selectedCustomer ? selectedCustomer.name : "Select Customer (Optional)"}
+                <FaUser className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                <span className="flex-1 text-left truncate">
+                  {selectedCustomer ? selectedCustomer.name : "Select Customer (Optional)"}
+                </span>
+                <FaChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showCustomerSelect ? 'rotate-180' : ''}`} />
               </button>
               {showCustomerSelect && !isProcessing && (
-                <div className="absolute z-10 mt-1 w-full max-w-sm bg-white rounded-xl shadow-lg border border-slate-200 max-h-60 overflow-y-auto">
-                  <input
-                    type="text"
-                    placeholder="Search customers..."
-                    className="w-full px-4 py-2 border-b border-slate-200 rounded-t-xl focus:outline-none"
-                    onChange={(e) => { /* Add customer search if needed */ }}
-                  />
-                  {customers.map(c => (
-                    <button
-                      key={c.id}
-                      onClick={() => {
-                        setSelectedCustomer(c);
-                        setShowCustomerSelect(false);
-                      }}
-                      className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors"
-                    >
-                      {c.name} {c.email ? `(${c.email})` : ''}
-                    </button>
-                  ))}
+                <div className="absolute z-10 mt-1 w-full max-w-sm bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-200/50 max-h-60 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
+                  <div className="p-2 border-b border-slate-200/50">
+                    <input
+                      type="text"
+                      placeholder="Search customers..."
+                      className="w-full px-3 py-2 border border-slate-300/50 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all duration-200"
+                      onChange={(e) => { /* Add customer search if needed */ }}
+                    />
+                  </div>
+                  <div className="py-1">
+                    {customers.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          setSelectedCustomer(c);
+                          setShowCustomerSelect(false);
+                        }}
+                        className="group flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-slate-50/50 transition-all duration-200"
+                      >
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                          {c.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 truncate">{c.name}</p>
+                          {c.email && <p className="text-xs text-slate-500 truncate">{c.email}</p>}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -243,7 +267,7 @@ export default function Billing() {
                   <input
                     type="text"
                     placeholder="Search products..."
-                    className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm disabled:opacity-50"
+                    className="w-full pl-10 pr-4 py-3 border border-slate-300/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white/80 backdrop-blur-sm placeholder-slate-400 transition-all duration-200 disabled:opacity-50"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     disabled={isProcessing}
@@ -252,32 +276,39 @@ export default function Billing() {
               </div>
 
               {/* Products Grid */}
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <FaShoppingCart className="w-5 h-5" />
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 p-6 mb-6">
+                <h3 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                  <FaShoppingCart className="w-5 h-5 text-blue-500" />
                   Available Products
                 </h3>
                 {filteredProducts.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500">
-                    <FaShoppingCart className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-                    <p>No products available.</p>
+                  <div className="text-center py-12 text-slate-500 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
+                    <FaShoppingCart className="w-16 h-16 mx-auto mb-4 text-slate-300 animate-bounce" />
+                    <p className="text-lg font-medium">No products available.</p>
+                    <p className="text-sm mt-1">Add products to start billing!</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredProducts.map(product => {
                       const currentQty = cart.find(item => item.id === product.id)?.quantity || 0;
                       const remaining = product.stock - currentQty;
+                      const lowStock = remaining < 5;
                       return (
                         <div
                           key={product.id}
-                          className="border border-slate-200 p-4 rounded-xl hover:shadow-md transition-all bg-slate-50"
+                          className={`group border border-slate-200/50 p-4 rounded-xl hover:shadow-md transition-all duration-300 bg-white/50 backdrop-blur-sm relative overflow-hidden ${lowStock ? 'border-orange-300 bg-orange-50/50' : ''}`}
                         >
-                          <h4 className="font-medium text-slate-900 mb-1">{product.name}</h4>
-                          <p className="text-emerald-600 font-semibold mb-2">{Number(product.price).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
-                          <p className="text-sm text-slate-600 mb-3">Available: {remaining}</p>
+                          {lowStock && (
+                            <div className="absolute top-2 right-2">
+                              <FaExclamationTriangle className="w-4 h-4 text-orange-500" />
+                            </div>
+                          )}
+                          <h4 className="font-semibold text-slate-900 mb-2 truncate">{product.name}</h4>
+                          <p className="text-emerald-600 font-bold text-lg mb-3">{Number(product.price).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
+                          <p className="text-sm text-slate-600 mb-4">Available: <span className={`font-medium ${lowStock ? 'text-orange-600' : 'text-slate-900'}`}>{remaining}</span></p>
                           <div className="flex gap-2 items-center">
                             <select
-                              className="border border-slate-300 px-2 py-1 rounded text-sm flex-1"
+                              className="border border-slate-300/50 px-3 py-2 rounded-xl text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all duration-200"
                               defaultValue={1}
                               id={`qty-${product.id}`}
                               disabled={isProcessing}
@@ -296,9 +327,9 @@ export default function Billing() {
                                 )
                               }
                               disabled={isProcessing}
-                              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="group flex items-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                             >
-                              <FaPlus className="w-3 h-3 inline mr-1" />
+                              <FaPlus className="w-3 h-3 group-hover:scale-110 transition-transform" />
                               Add
                             </button>
                           </div>
@@ -312,61 +343,65 @@ export default function Billing() {
 
             {/* Cart Section */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 h-fit sticky top-6">
-                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <FaShoppingCart className="w-5 h-5" />
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 p-6 h-fit sticky top-6">
+                <h3 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                  <FaShoppingCart className="w-5 h-5 text-indigo-500" />
                   Shopping Cart
                 </h3>
                 {cart.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500">
-                    <FaShoppingCart className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-                    <p>Cart is empty</p>
+                  <div className="text-center py-12 text-slate-500 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl">
+                    <FaShoppingCart className="w-16 h-16 mx-auto mb-4 text-slate-300 animate-pulse" />
+                    <p className="text-lg font-medium">Cart is empty</p>
+                    <p className="text-sm mt-1">Add products to get started!</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
                     {cart.map(item => (
-                      <div key={item.id} className="flex items-center justify-between py-2 border-b border-slate-200 last:border-b-0">
+                      <div key={item.id} className="group flex items-center justify-between py-3 border-b border-slate-200/50 last:border-b-0 hover:bg-slate-50/50 transition-all duration-200 rounded-lg p-3">
                         <div className="flex-1">
-                          <p className="font-medium text-slate-900 text-sm">{item.name}</p>
+                          <p className="font-semibold text-slate-900 text-sm truncate">{item.name}</p>
                           <p className="text-slate-600 text-xs">{Number(item.price).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3 ml-4">
                           <button
                             onClick={() => updateQuantity(item.id, -1)}
                             disabled={isProcessing}
-                            className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors disabled:opacity-50"
+                            className="group relative p-1.5 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <FaMinus className="w-3 h-3" />
+                            <div className="absolute inset-0 bg-slate-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
                           </button>
-                          <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                          <span className="w-8 text-center text-sm font-semibold text-slate-900 bg-slate-100 rounded px-2 py-1">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.id, 1)}
                             disabled={isProcessing}
-                            className="bg-slate-200 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-300 transition-colors disabled:opacity-50"
+                            className="group relative p-1.5 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <FaPlus className="w-3 h-3" />
+                            <div className="absolute inset-0 bg-slate-200 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
                           </button>
                           <button
                             onClick={() => removeFromCart(item.id)}
                             disabled={isProcessing}
-                            className="bg-red-100 text-red-600 p-1 rounded hover:bg-red-200 transition-colors disabled:opacity-50"
+                            className="group relative p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <FaTrash className="w-4 h-4" />
+                            <div className="absolute inset-0 bg-red-100 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
                           </button>
                         </div>
-                        <p className="text-sm font-semibold text-slate-900 ml-4">{Number(item.price * item.quantity).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
+                        <p className="text-sm font-bold text-emerald-600 ml-4 whitespace-nowrap">{Number(item.price * item.quantity).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
                       </div>
                     ))}
-                    <div className="pt-4 border-t border-slate-200 space-y-2">
-                      <div className="flex justify-between text-sm">
+                    <div className="pt-4 border-t border-slate-200/50 space-y-3">
+                      <div className="flex justify-between text-sm font-medium text-slate-700">
                         <span>Subtotal:</span>
-                        <span className="font-semibold">{Number(subtotal).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
+                        <span>{Number(subtotal).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-sm text-red-600">
                         <span>Discount:</span>
-                        <span className="text-red-600">-{Number(discount).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
+                        <span>-{Number(discount).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
                       </div>
-                      <div className="flex justify-between text-lg font-bold text-emerald-600 pt-2">
+                      <div className="flex justify-between text-xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent pt-2">
                         <span>Total:</span>
                         <span>{Number(total).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
                       </div>
@@ -376,14 +411,14 @@ export default function Billing() {
               </div>
 
               {/* Discount Input */}
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mt-6">
-                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                  <FaCalculator className="w-4 h-4" />
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200/50 p-4 mt-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                  <FaCalculator className="w-4 h-4 text-blue-500" />
                   Discount
                 </label>
                 <input
                   type="number"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                  className="w-full px-4 py-3 border border-slate-300/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all duration-200 disabled:opacity-50"
                   value={discount}
                   onChange={e => setDiscount(parseFloat(e.target.value) || 0)}
                   min="0"
@@ -395,20 +430,20 @@ export default function Billing() {
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-3 mt-6">
-                 <button
+                <button
                   onClick={printBill}
                   disabled={cart.length === 0 || isProcessing}
-                  className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-all disabled:bg-slate-400 disabled:cursor-not-allowed font-medium"
+                  className="group flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <FaPrint className="w-5 h-5" />
+                  <FaPrint className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   Print Bill
                 </button>
                 <button
                   onClick={completeSale}
                   disabled={cart.length === 0 || isProcessing}
-                  className="flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl hover:bg-emerald-700 transition-all disabled:bg-slate-400 disabled:cursor-not-allowed font-medium"
+                  className="group flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <FaCheckCircle className="w-5 h-5" />
+                  <FaCheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   {isProcessing ? "Processing..." : "Complete Sale"}
                 </button>
               </div>
@@ -424,22 +459,47 @@ export default function Billing() {
             }} 
             title="Order Completed Successfully!"
           >
-            <div className="space-y-4">
-              <p className="text-slate-700">Your sale has been processed and inventory updated.</p>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                <p className="font-medium text-slate-900">Order ID: #{completedOrder?.id}</p>
-                <p className="text-emerald-600 font-semibold">Total: {Number(completedOrder?.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
+            <div className="space-y-6">
+              <div className="text-center py-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                <FaCheckCircle className="w-12 h-12 mx-auto mb-3 text-emerald-500 animate-bounce" />
+                <p className="text-slate-700 font-medium">Your sale has been processed and inventory updated.</p>
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-slate-600 mb-1">Order ID:</p>
+                    <p className="font-semibold text-slate-900">#{completedOrder?.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600 mb-1">Customer:</p>
+                    <p className="font-medium text-slate-900">{completedOrder?.customer}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600 mb-1">Subtotal:</p>
+                    <p className="font-semibold text-slate-900">{Number(completedOrder?.subtotal || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600 mb-1">Discount:</p>
+                    <p className="text-red-600 font-semibold">-{Number(completedOrder?.discount || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-slate-600 mb-1">Total:</p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+                      {Number(completedOrder?.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-6 border-t border-slate-200/50">
                 <button
                   onClick={() => {
                     printCompletedBill();
                     setShowSuccessModal(false);
                     setCompletedOrder(null);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  <FaPrint className="w-4 h-4" />
+                  <FaPrint className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   Print Bill
                 </button>
                 <button
@@ -447,7 +507,7 @@ export default function Billing() {
                     setShowSuccessModal(false);
                     setCompletedOrder(null);
                   }}
-                  className="px-4 py-2 text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="px-6 py-3 text-slate-700 border border-slate-300/50 rounded-xl hover:bg-slate-50 transition-all duration-200 font-medium"
                 >
                   Close
                 </button>
