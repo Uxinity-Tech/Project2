@@ -11,6 +11,8 @@ export default function Orders() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -18,17 +20,29 @@ export default function Orders() {
   const tableData = orders.map(order => ({
     id: order.id,
     customer: order.customer,
-    total: `$${Number(order.total || 0).toFixed(2)}`,
+    total: Number(order.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
     status: order.status || "Completed",
     date: order.date ? new Date(order.date).toLocaleDateString() : new Date().toLocaleDateString(),
   }));
 
-  const filteredOrders = tableData.filter(order => {
+  const filteredOrdersRaw = orders.filter(order => {
     const matchesSearch = order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           order.id.toString().includes(searchTerm);
     const matchesStatus = filterStatus === "All" || order.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const orderDate = new Date(order.date);
+    const from = fromDate ? new Date(fromDate) : null;
+    const to = toDate ? new Date(toDate) : null;
+    const matchesDate = !from || !to || (orderDate >= from && orderDate <= to);
+    return matchesSearch && matchesStatus && matchesDate;
   });
+
+  const filteredOrders = filteredOrdersRaw.map(order => ({
+    id: order.id,
+    customer: order.customer,
+    total: Number(order.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
+    status: order.status || "Completed",
+    date: order.date ? new Date(order.date).toLocaleDateString() : new Date().toLocaleDateString(),
+  }));
 
   const statusOptions = ["All", ...new Set(orders.map(order => order.status || "Completed"))];
 
@@ -39,7 +53,7 @@ export default function Orders() {
       ...filteredOrders.map(order => [
         order.id,
         order.customer,
-        order.total,
+        order.total.replace(/[^\d.,]/g, ''), // Remove currency symbol for CSV
         order.status,
         order.date,
       ].join(","))
@@ -85,7 +99,7 @@ export default function Orders() {
           </div>
 
           {/* Search and Filter */}
-          <div className="mb-6 flex flex-col md:flex-row gap-4">
+          <div className="mb-6 flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1 max-w-md">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
@@ -96,7 +110,7 @@ export default function Orders() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="relative flex-1 max-w-sm md:flex-none md:w-48">
+            <div className="relative flex-1 max-w-sm lg:flex-none lg:w-48">
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -107,6 +121,26 @@ export default function Orders() {
                 ))}
               </select>
               <FaFilter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+            </div>
+            <div className="flex gap-2 flex-1 lg:flex-none">
+              <div className="relative flex-1">
+                <FaCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <input
+                  type="date"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </div>
+              <div className="relative flex-1">
+                <FaCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <input
+                  type="date"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
@@ -232,15 +266,15 @@ export default function Orders() {
                     </div>
                     <div>
                       <p className="text-slate-600">Subtotal:</p>
-                      <p className="font-medium">${selectedOrder.subtotal?.toFixed(2) || '0.00'}</p>
+                      <p className="font-medium">{Number(selectedOrder.subtotal || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
                     </div>
                     <div>
                       <p className="text-slate-600">Discount:</p>
-                      <p className="font-medium text-red-600">-${selectedOrder.discount?.toFixed(2) || '0.00'}</p>
+                      <p className="font-medium text-red-600">-{Number(selectedOrder.discount || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
                     </div>
                     <div className="col-span-2">
                       <p className="text-slate-600">Total:</p>
-                      <p className="text-2xl font-bold text-emerald-600">${selectedOrder.total?.toFixed(2) || '0.00'}</p>
+                      <p className="text-2xl font-bold text-emerald-600">{Number(selectedOrder.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
                     </div>
                   </div>
                 </div>
@@ -265,9 +299,9 @@ export default function Orders() {
                         {selectedOrder.items?.map((item, idx) => (
                           <tr key={idx} className="hover:bg-slate-50">
                             <td className="px-4 py-3 text-sm text-slate-900">{item.name}</td>
-                            <td className="px-4 py-3 text-sm text-slate-900 text-right">${Number(item.price).toFixed(2)}</td>
+                            <td className="px-4 py-3 text-sm text-slate-900 text-right">{Number(item.price || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</td>
                             <td className="px-4 py-3 text-sm text-slate-900 text-right">{item.quantity}</td>
-                            <td className="px-4 py-3 text-sm font-medium text-slate-900 text-right">${(item.price * item.quantity).toFixed(2)}</td>
+                            <td className="px-4 py-3 text-sm font-medium text-slate-900 text-right">{Number((item.price || 0) * (item.quantity || 0)).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</td>
                           </tr>
                         )) || (
                           <tr>

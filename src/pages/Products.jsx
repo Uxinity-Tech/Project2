@@ -11,7 +11,7 @@ export default function Products() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [newProduct, setNewProduct] = useState({ name: "", originalRate: "", mrp: "", stock: "" });
+  const [newProduct, setNewProduct] = useState({ name: "", originalRate: "", mrp: "", stock: "", stockValue: "" });
 
   const filteredProducts = products.filter(
     (product) =>
@@ -27,6 +27,7 @@ export default function Products() {
     const parsedMRP = parseFloat(newProduct.mrp);
     const parsedStock = parseInt(newProduct.stock);
     const parsedOriginalRate = parseFloat(newProduct.originalRate) || 0;
+    const parsedStockValue = parseFloat(newProduct.stockValue) || 0;
 
     if (isNaN(parsedMRP) || isNaN(parsedStock) || parsedStock < 0) {
       alert("MRP and Stock must be valid positive numbers.");
@@ -39,19 +40,21 @@ export default function Products() {
         ...prev,
         products: prev.products.map((p) =>
           p.id === editingProduct.id 
-            ? { ...newProduct, id: p.id, price: parsedMRP, stock: parsedStock, originalRate: parsedOriginalRate }
+            ? { ...newProduct, id: p.id, price: parsedMRP, stock: parsedStock, originalRate: parsedOriginalRate, stockValue: parsedStockValue }
             : p
         ),
       }));
       setEditingProduct(null);
     } else {
       // Add new
+      const nextId = products.length === 0 ? 1 : Math.max(...products.map(p => p.id)) + 1;
       const product = { 
         ...newProduct, 
-        id: Date.now(),
+        id: nextId,
         price: parsedMRP,
         stock: parsedStock,
-        originalRate: parsedOriginalRate
+        originalRate: parsedOriginalRate,
+        stockValue: parsedStockValue
       };
       setState((prev) => ({
         ...prev,
@@ -60,7 +63,7 @@ export default function Products() {
     }
 
     setShowModal(false);
-    setNewProduct({ name: "", originalRate: "", mrp: "", stock: "" });
+    setNewProduct({ name: "", originalRate: "", mrp: "", stock: "", stockValue: "" });
   };
 
   const handleEdit = (product) => {
@@ -68,7 +71,8 @@ export default function Products() {
       name: product.name, 
       originalRate: product.originalRate || "", 
       mrp: product.price || "", 
-      stock: product.stock || "" 
+      stock: product.stock || "",
+      stockValue: product.stockValue || ""
     });
     setEditingProduct(product);
     setShowModal(true);
@@ -84,7 +88,7 @@ export default function Products() {
   };
 
   const openAddModal = () => {
-    setNewProduct({ name: "", originalRate: "", mrp: "", stock: "" });
+    setNewProduct({ name: "", originalRate: "", mrp: "", stock: "", stockValue: "" });
     setEditingProduct(null);
     setShowModal(true);
   };
@@ -141,16 +145,16 @@ export default function Products() {
                       Name
                     </th>
                     <th className="px-6 py-4 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      Stock
+                    </th>
+                     <th className="px-6 py-4 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Original Rate
                     </th>
                     <th className="px-6 py-4 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      MRP
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Stock
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Stock Value
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      MRP
                     </th>
                     <th className="px-6 py-4 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
                       Actions
@@ -166,45 +170,42 @@ export default function Products() {
                       </td>
                     </tr>
                   ) : (
-                    filteredProducts.map((product) => {
-                      const stockValue = (product.stock || 0) * (product.price || 0);
-                      return (
-                        <tr key={product.id} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 text-left">
-                            #{product.id}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 text-left">
-                            {product.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 text-right">
-                            ${Number(product.originalRate || 0).toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 text-right">
-                            ${Number(product.price || 0).toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 text-right">
-                            {product.stock || 0}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
-                            ${stockValue.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center space-x-2">
-                            <button
-                              onClick={() => handleEdit(product)}
-                              className="text-emerald-600 hover:text-emerald-900 p-1 rounded transition-colors inline-block align-middle"
-                            >
-                              <FaEdit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(product.id)}
-                              className="text-red-600 hover:text-red-900 p-1 rounded transition-colors inline-block align-middle"
-                            >
-                              <FaTrash className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
+                    filteredProducts.map((product) => (
+                      <tr key={product.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 text-left">
+                          #{product.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 text-left">
+                          {product.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 text-right">
+                          {product.stock || 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 text-right">
+                          {Number(product.originalRate || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 text-right">
+                          {Number(product.stockValue || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 text-right">
+                          {Number(product.price || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center space-x-2">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="text-emerald-600 hover:text-emerald-900 p-1 rounded transition-colors inline-block align-middle"
+                          >
+                            <FaEdit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded transition-colors inline-block align-middle"
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
@@ -245,6 +246,7 @@ export default function Products() {
                         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         value={newProduct.originalRate}
                         onChange={(e) => setNewProduct({ ...newProduct, originalRate: e.target.value })}
+                        placeholder="Enter in INR"
                       />
                     </div>
                     <div>
@@ -256,6 +258,7 @@ export default function Products() {
                         value={newProduct.mrp}
                         onChange={(e) => setNewProduct({ ...newProduct, mrp: e.target.value })}
                         required
+                        placeholder="Enter in INR"
                       />
                     </div>
                     <div>
@@ -267,6 +270,17 @@ export default function Products() {
                         onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
                         required
                         min="0"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Stock Value</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        value={newProduct.stockValue}
+                        onChange={(e) => setNewProduct({ ...newProduct, stockValue: e.target.value })}
+                        placeholder="Enter in INR"
                       />
                     </div>
                   </div>

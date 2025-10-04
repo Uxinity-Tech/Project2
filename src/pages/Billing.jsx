@@ -75,7 +75,7 @@ export default function Billing() {
     const itemsHtml = order.items.map(item => `
       <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
         <span>${item.name} (${item.quantity}x)</span>
-        <span>$${ (item.price * item.quantity).toFixed(2) }</span>
+        <span>${Number(item.price * item.quantity).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
       </div>
     `).join('');
 
@@ -94,10 +94,10 @@ export default function Billing() {
           ${itemsHtml}
         </div>
         <div style="margin-bottom: 10px; text-align: right;">
-          <p><strong>Subtotal:</strong> $${order.subtotal.toFixed(2)}</p>
-          <p><strong>Discount:</strong> -$${order.discount.toFixed(2)}</p>
+          <p><strong>Subtotal:</strong> ${Number(order.subtotal).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
+          <p><strong>Discount:</strong> -${Number(order.discount).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
           <hr style="margin: 5px 0;">
-          <p><strong>Total:</strong> $${order.total.toFixed(2)}</p>
+          <p><strong>Total:</strong> ${Number(order.total).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
         </div>
         <div style="text-align: center; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 12px;">
           <p>Thank you for your purchase!</p>
@@ -109,10 +109,6 @@ export default function Billing() {
 
   // Complete sale / Save bill
   const completeSale = () => {
-    if (!selectedCustomer) {
-      alert("Please select a customer.");
-      return;
-    }
     if (cart.length === 0) {
       alert("Cart is empty.");
       return;
@@ -132,7 +128,7 @@ export default function Billing() {
     // Save order in global state
     const newOrder = {
       id: Date.now(),
-      customer: selectedCustomer.name,
+      customer: selectedCustomer?.name || 'Guest',
       items: [...cart], // Copy cart before reset
       subtotal,
       discount,
@@ -210,7 +206,7 @@ export default function Billing() {
                 className="flex items-center gap-2 w-full max-w-sm px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm bg-white hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FaUser className="w-4 h-4 text-slate-400" />
-                {selectedCustomer ? selectedCustomer.name : "Select Customer"}
+                {selectedCustomer ? selectedCustomer.name : "Select Customer (Optional)"}
               </button>
               {showCustomerSelect && !isProcessing && (
                 <div className="absolute z-10 mt-1 w-full max-w-sm bg-white rounded-xl shadow-lg border border-slate-200 max-h-60 overflow-y-auto">
@@ -277,7 +273,7 @@ export default function Billing() {
                           className="border border-slate-200 p-4 rounded-xl hover:shadow-md transition-all bg-slate-50"
                         >
                           <h4 className="font-medium text-slate-900 mb-1">{product.name}</h4>
-                          <p className="text-emerald-600 font-semibold mb-2">${product.price.toFixed(2)}</p>
+                          <p className="text-emerald-600 font-semibold mb-2">{Number(product.price).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
                           <p className="text-sm text-slate-600 mb-3">Available: {remaining}</p>
                           <div className="flex gap-2 items-center">
                             <select
@@ -332,7 +328,7 @@ export default function Billing() {
                       <div key={item.id} className="flex items-center justify-between py-2 border-b border-slate-200 last:border-b-0">
                         <div className="flex-1">
                           <p className="font-medium text-slate-900 text-sm">{item.name}</p>
-                          <p className="text-slate-600 text-xs">${item.price.toFixed(2)}</p>
+                          <p className="text-slate-600 text-xs">{Number(item.price).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -358,21 +354,21 @@ export default function Billing() {
                             <FaTrash className="w-4 h-4" />
                           </button>
                         </div>
-                        <p className="text-sm font-semibold text-slate-900 ml-4">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="text-sm font-semibold text-slate-900 ml-4">{Number(item.price * item.quantity).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
                       </div>
                     ))}
                     <div className="pt-4 border-t border-slate-200 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Subtotal:</span>
-                        <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                        <span className="font-semibold">{Number(subtotal).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Discount:</span>
-                        <span className="text-red-600">-${discount.toFixed(2)}</span>
+                        <span className="text-red-600">-{Number(discount).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
                       </div>
                       <div className="flex justify-between text-lg font-bold text-emerald-600 pt-2">
                         <span>Total:</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>{Number(total).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
                       </div>
                     </div>
                   </div>
@@ -399,21 +395,21 @@ export default function Billing() {
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-3 mt-6">
-                <button
-                  onClick={completeSale}
-                  disabled={!selectedCustomer || cart.length === 0 || isProcessing}
-                  className="flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl hover:bg-emerald-700 transition-all disabled:bg-slate-400 disabled:cursor-not-allowed font-medium"
-                >
-                  <FaCheckCircle className="w-5 h-5" />
-                  {isProcessing ? "Processing..." : "Complete Sale"}
-                </button>
-                <button
+                 <button
                   onClick={printBill}
                   disabled={cart.length === 0 || isProcessing}
                   className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition-all disabled:bg-slate-400 disabled:cursor-not-allowed font-medium"
                 >
                   <FaPrint className="w-5 h-5" />
                   Print Bill
+                </button>
+                <button
+                  onClick={completeSale}
+                  disabled={cart.length === 0 || isProcessing}
+                  className="flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl hover:bg-emerald-700 transition-all disabled:bg-slate-400 disabled:cursor-not-allowed font-medium"
+                >
+                  <FaCheckCircle className="w-5 h-5" />
+                  {isProcessing ? "Processing..." : "Complete Sale"}
                 </button>
               </div>
             </div>
@@ -432,7 +428,7 @@ export default function Billing() {
               <p className="text-slate-700">Your sale has been processed and inventory updated.</p>
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
                 <p className="font-medium text-slate-900">Order ID: #{completedOrder?.id}</p>
-                <p className="text-emerald-600 font-semibold">Total: ${completedOrder?.total?.toFixed(2)}</p>
+                <p className="text-emerald-600 font-semibold">Total: {Number(completedOrder?.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
                 <button

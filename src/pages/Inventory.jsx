@@ -186,7 +186,7 @@ export default function Inventory() {
                                 onChange={(e) => handleFieldChange(product.id, "originalRate", e.target.value)}
                               />
                             ) : (
-                              <span className="text-sm text-slate-900">${Number(product.originalRate || 0).toFixed(2)}</span>
+                              <span className="text-sm text-slate-900">{Number(product.originalRate || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -199,7 +199,7 @@ export default function Inventory() {
                                 onChange={(e) => handleFieldChange(product.id, "mrp", e.target.value)}
                               />
                             ) : (
-                              <span className="text-sm font-medium text-slate-900">${Number(product.price || 0).toFixed(2)}</span>
+                              <span className="text-sm font-medium text-slate-900">{Number(product.price || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -216,7 +216,7 @@ export default function Inventory() {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
-                            ${stockValue.toFixed(2)}
+                            {Number(stockValue).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
                             {isEditing ? (

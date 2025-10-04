@@ -3,6 +3,28 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { FaDollarSign, FaChartLine, FaShoppingCart, FaCalendarAlt, FaFileExport } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import { FaIndianRupeeSign } from "react-icons/fa6";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Reports() {
   const { state } = useContext(AuthContext);
@@ -48,8 +70,8 @@ export default function Reports() {
   const reportStats = [
     {
       title: "Total Sales",
-      value: `$${totalSales.toLocaleString()}`,
-      icon: <FaDollarSign className="w-8 h-8" />,
+      value: totalSales.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
+      icon: <FaIndianRupeeSign className="w-8 h-8" />,
       color: "bg-emerald-600",
       textColor: "text-emerald-600",
     },
@@ -62,8 +84,8 @@ export default function Reports() {
     },
     {
       title: "Average Order Value",
-      value: `$${avgOrderValue}`,
-      icon: <FaDollarSign className="w-8 h-8" />,
+      value: Number(avgOrderValue).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
+      icon: <FaIndianRupeeSign className="w-8 h-8" />,
       color: "bg-purple-600",
       textColor: "text-purple-600",
     },
@@ -79,7 +101,7 @@ export default function Reports() {
   const recentOrders = orders.slice(-5).map(order => ({
     id: order.id,
     customer: order.customer,
-    total: `$${Number(order.total || 0).toFixed(2)}`,
+    total: Number(order.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
     date: order.date ? new Date(order.date).toLocaleDateString() : new Date().toLocaleDateString(),
   }));
 
@@ -90,7 +112,7 @@ export default function Reports() {
       ...recentOrders.map(order => [
         order.id,
         order.customer,
-        order.total,
+        order.total.replace(/[^\d.,]/g, ''), // Remove currency symbol for CSV
         order.date,
       ].join(","))
     ].join("\n");
@@ -102,6 +124,66 @@ export default function Reports() {
     a.download = "sales-report.csv";
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const getMonthlySalesData = () => {
+    const now = new Date();
+    const months = [];
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(date);
+    }
+    const labels = months.map(m => m.toLocaleString('default', { month: 'short', year: 'numeric' }));
+    const data = months.map(month => {
+      const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
+      const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+      const sales = orders
+        .filter(order => {
+          const orderDate = new Date(order.date);
+          return orderDate >= monthStart && orderDate <= monthEnd;
+        })
+        .reduce((sum, order) => sum + Number(order.total || 0), 0);
+      return sales;
+    });
+    return { labels, data };
+  };
+
+  const { labels, data } = getMonthlySalesData();
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: 'Sales (INR)',
+        data,
+        borderColor: 'rgb(99, 102, 241)',
+        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Sales Trend Over Time',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return '₹' + value.toLocaleString('en-IN');
+          }
+        }
+      }
+    }
   };
 
   return (
@@ -187,13 +269,17 @@ export default function Reports() {
             )}
           </div>
 
-          {/* Sales Trend Chart Placeholder */}
+          {/* Sales Trend Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">Sales Trend Over Time</h3>
-            <div className="h-80 bg-slate-50 rounded-lg flex items-center justify-center text-slate-500">
-              <FaChartLine className="w-16 h-16 mr-2" />
-              <p>Interactive sales chart (Monthly breakdown)</p>
-            </div>
+            {orders.length === 0 ? (
+              <div className="h-80 bg-slate-50 rounded-lg flex items-center justify-center text-slate-500">
+                <FaChartLine className="w-16 h-16 mr-2" />
+                <p>Interactive sales chart (Monthly breakdown)</p>
+              </div>
+            ) : (
+              <Line options={chartOptions} data={chartData} />
+            )}
           </div>
         </main>
       </div>

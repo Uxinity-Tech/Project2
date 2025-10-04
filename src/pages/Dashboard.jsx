@@ -2,9 +2,32 @@ import React, { useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Card from "../components/Card";
-import { FaUsers, FaBoxOpen, FaShoppingCart, FaWarehouse, FaChartLine, FaDollarSign } from "react-icons/fa";
+import { FaUsers, FaBoxOpen, FaShoppingCart, FaWarehouse, FaChartLine } from "react-icons/fa";
+import { FaIndianRupeeSign } from "react-icons/fa6";
 import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 export default function Dashboard() {
   const { state } = useContext(AuthContext);
 
@@ -39,8 +62,8 @@ export default function Dashboard() {
     },
     {
       title: "Total Inventory Value",
-      value: `$${totalInventoryValue.toLocaleString()}`,
-      icon: <FaDollarSign className="w-8 h-8" />,
+      value: totalInventoryValue.toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
+      icon: <FaIndianRupeeSign className="w-8 h-8" />,
       color: "bg-purple-600",
       textColor: "text-purple-600",
     },
@@ -49,9 +72,60 @@ export default function Dashboard() {
   const recentOrders = orders.slice(-5).map(order => ({
     id: order.id,
     customer: order.customer || 'Unknown',
-    total: `$${Number(order.total || 0).toFixed(2)}`,
+    total: Number(order.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
     date: order.date ? new Date(order.date).toLocaleDateString() : new Date().toLocaleDateString(),
   }));
+
+  const getMonthlySales = () => {
+    const monthlySales = {};
+    orders.forEach(order => {
+      const date = new Date(order.date);
+      const month = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+      if (!monthlySales[month]) monthlySales[month] = 0;
+      monthlySales[month] += Number(order.total || 0);
+    });
+    return Object.entries(monthlySales).sort((a, b) => new Date(a[0]) - new Date(b[0]));
+  };
+
+  const monthlyData = getMonthlySales();
+  const labels = monthlyData.map(([month]) => month);
+  const dataValues = monthlyData.map(([, sales]) => sales);
+
+  const chartData = {
+    labels,
+    datasets: [
+      {
+        label: 'Sales (INR)',
+        data: dataValues,
+        borderColor: 'rgb(99, 102, 241)',
+        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Sales Trend Over Time',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return '₹' + value.toLocaleString('en-IN');
+          }
+        }
+      }
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -159,13 +233,17 @@ export default function Dashboard() {
     </div>
   </div>
 
-  {/* Sales Trend - Placeholder */}
+  {/* Sales Trend */}
   <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
     <h3 className="text-lg font-semibold text-slate-900 mb-4">Sales Trend</h3>
-    <div className="h-64 bg-slate-50 rounded-lg flex items-center justify-center text-slate-500">
-      <FaChartLine className="w-16 h-16" />
-      <p className="ml-2">Sales overview chart</p>
-    </div>
+    {orders.length === 0 ? (
+      <div className="h-64 bg-slate-50 rounded-lg flex items-center justify-center text-slate-500">
+        <FaChartLine className="w-16 h-16" />
+        <p className="ml-2">No sales data available</p>
+      </div>
+    ) : (
+      <Line options={chartOptions} data={chartData} />
+    )}
   </div>
 </div>
         </main>

@@ -23,6 +23,9 @@ export default function Table({ columns, data, actions = [] }) {
       <table className="min-w-full bg-white rounded-xl shadow-sm border border-slate-200 divide-y divide-slate-200">
         <thead className="bg-slate-50">
           <tr>
+            <th className="px-6 py-4 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+              ID
+            </th>
             {columns.map((col) => (
               <th
                 key={col}
@@ -41,6 +44,9 @@ export default function Table({ columns, data, actions = [] }) {
         <tbody className="bg-white divide-y divide-slate-200">
           {data.map((row, idx) => (
             <tr key={idx} className="hover:bg-slate-50 transition-colors">
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                {idx + 1}
+              </td>
               {columns.map((col) => (
                 <td
                   key={col}
