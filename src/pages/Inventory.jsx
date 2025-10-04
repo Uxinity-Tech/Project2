@@ -34,6 +34,13 @@ export default function Inventory() {
       return;
     }
 
+    const parsedStockValue = parseFloat(edited.stockValue) || 0;
+
+    if (parsedStockValue < 0) {
+      alert("Stock Value must be non-negative.");
+      return;
+    }
+
     const updatedProducts = products.map((p) =>
       p.id === id
         ? {
@@ -42,6 +49,7 @@ export default function Inventory() {
             originalRate: parseFloat(edited.originalRate) || p.originalRate || 0,
             price: parseFloat(edited.mrp) || p.price || 0,
             stock: parseInt(edited.stock) || p.stock || 0,
+            stockValue: parsedStockValue
           }
         : p
     );
@@ -68,9 +76,11 @@ export default function Inventory() {
   };
 
   const getStockValue = (product, id) => {
-    const stock = parseInt(editingData[id]?.stock ?? product.stock) || 0;
-    const mrp = parseFloat(editingData[id]?.mrp ?? product.price) || 0;
-    return stock * mrp;
+    const editedStockValue = editingData[id]?.stockValue;
+    if (editedStockValue !== undefined) {
+      return parseFloat(editedStockValue) || 0;
+    }
+    return product.stockValue || (parseInt(product.stock || 0) * parseFloat(product.price || 0));
   };
 
   return (
@@ -215,8 +225,19 @@ export default function Inventory() {
                               <span className="text-sm text-slate-900">{product.stock || 0}</span>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600 text-right">
-                            {Number(stockValue).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                step="0.01"
+                                className="w-24 px-2 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-right"
+                                value={editingData[product.id]?.stockValue ?? stockValue}
+                                onChange={(e) => handleFieldChange(product.id, "stockValue", e.target.value)}
+                                min="0"
+                              />
+                            ) : (
+                              <span className="text-sm font-medium text-emerald-600">{Number(stockValue).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center space-x-2">
                             {isEditing ? (
