@@ -41,7 +41,7 @@ export default function Billing() {
 
   // Filter products
   const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) && p.stock > 0
   );
 
   // Totals
@@ -162,7 +162,7 @@ export default function Billing() {
                     defaultValue={1}
                     id={`qty-${product.id}`}
                   >
-                    {[...Array(10).keys()].map(n => (
+                    {[...Array(product.stock).keys()].map(n => (
                       <option key={n + 1} value={n + 1}>
                         {n + 1}
                       </option>
