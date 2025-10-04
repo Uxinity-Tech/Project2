@@ -89,7 +89,13 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-slate-900">Recent Orders</h2>
-              <a href="/orders" className="text-blue-600 hover:text-blue-800 text-sm font-medium">View All →</a>
+             <Link
+  to="/orders"
+  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+>
+  View All →
+</Link>
+
             </div>
             {recentOrders.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
