@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import { FaPlus, FaUsers, FaSearch,FaPhone, FaEdit, FaTrash, FaUserPlus, FaUserCircle } from "react-icons/fa";
+import { FaPlus, FaUsers, FaSearch, FaPhone, FaEdit, FaTrash, FaUserPlus, FaUserCircle } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Customers() {
@@ -36,7 +36,11 @@ export default function Customers() {
       setEditingCustomer(null);
     } else {
       // Add new
-      const customer = { ...newCustomer, id: Date.now() };
+      const maxId = customers.length > 0
+        ? Math.max(...customers.map(c => Number(c.id)))
+        : 0;
+      const newId = maxId + 1;
+      const customer = { ...newCustomer, id: newId };
       addCustomer(customer);
     }
 

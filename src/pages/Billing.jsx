@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/Modal";
-import { FaUser, FaSearch,FaChevronDown, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaCalculator, FaPrint, FaCheckCircle, FaTicketAlt, FaExclamationTriangle } from "react-icons/fa";
+import { FaUser, FaSearch, FaChevronDown, FaShoppingCart, FaPlus, FaMinus, FaTrash, FaCalculator, FaPrint, FaCheckCircle, FaTicketAlt, FaExclamationTriangle } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Billing() {
@@ -47,9 +47,20 @@ export default function Billing() {
 
   // Update quantity in cart
   const updateQuantity = (productId, change) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const currentQty = cart.find(item => item.id === productId)?.quantity || 0;
+    const newQty = Math.max(1, currentQty + change);
+
+    if (change > 0 && newQty > product.stock) {
+      alert(`Only ${product.stock} available for ${product.name}.`);
+      return;
+    }
+
     setCart(cart.map(item =>
       item.id === productId
-        ? { ...item, quantity: Math.max(1, item.quantity + change) }
+        ? { ...item, quantity: newQty }
         : item
     ));
   };
@@ -59,12 +70,10 @@ export default function Billing() {
     setCart(cart.filter(item => item.id !== productId));
   };
 
-  // Filter products based on search and remaining stock
-  const filteredProducts = products.filter(p => {
-    const currentQty = cart.find(item => item.id === p.id)?.quantity || 0;
-    const remaining = p.stock - currentQty;
-    return p.name.toLowerCase().includes(searchTerm.toLowerCase()) && remaining > 0;
-  });
+  // Filter products based on search (include all products, even with zero stock)
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Totals
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -83,7 +92,9 @@ export default function Billing() {
       <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; line-height: 1.4;">
         <div style="text-align: center; margin-bottom: 20px;">
           <h2 style="margin: 0; font-size: 24px;">Market CRM Receipt</h2>
-          <p style="margin: 5px 0 0 0; font-size: 14px;">Order ID: #${order.id}</p>
+          <span style="display: inline-block; margin: 10px 0; padding: 4px 8px; font-size: 14px; font-weight: 600; background-color: #DBEAFE; color: #1E40AF; border-radius: 9999px;">
+            Order #${order.id}
+          </span>
         </div>
         <div style="margin-bottom: 10px;">
           <p><strong>Customer:</strong> ${order.customer}</p>
@@ -125,9 +136,15 @@ export default function Billing() {
 
     setState(prev => ({ ...prev, products: updatedProducts }));
 
+    // Generate sequential order ID
+    const maxId = state.orders && state.orders.length > 0
+      ? Math.max(...state.orders.map(o => Number(o.id)))
+      : 0;
+    const newId = maxId + 1;
+
     // Save order in global state
     const newOrder = {
-      id: Date.now(),
+      id: newId,
       customer: selectedCustomer?.name || 'Guest',
       items: [...cart], // Copy cart before reset
       subtotal,
@@ -155,11 +172,21 @@ export default function Billing() {
   const printCompletedBill = () => {
     if (!completedOrder) return;
     const billContent = generateBillContent(completedOrder);
-    const originalContent = document.body.innerHTML;
-
-    document.body.innerHTML = billContent;
-    window.print();
-    document.body.innerHTML = originalContent;
+    const printWindow = window.open('', '_blank', 'width=600,height=800');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Receipt</title>
+          <style>
+            @media print {
+              body { margin: 0; font-size: 12pt; }
+            }
+          </style>
+        </head>
+        <body onload="window.print();window.close();">${billContent}</body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   // Print current cart bill (manual before completion)
@@ -169,7 +196,7 @@ export default function Billing() {
       return;
     }
     const tempOrder = {
-      id: Date.now(),
+      id: Date.now(), // Temporary ID for manual print
       customer: selectedCustomer?.name || 'Guest',
       items: [...cart],
       subtotal,
@@ -178,11 +205,29 @@ export default function Billing() {
       date: new Date().toLocaleString()
     };
     const billContent = generateBillContent(tempOrder);
-    const originalContent = document.body.innerHTML;
+    const printWindow = window.open('', '_blank', 'width=600,height=800');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Receipt</title>
+          <style>
+            @media print {
+              body { margin: 0; font-size: 12pt; }
+            }
+          </style>
+        </head>
+        <body onload="window.print();window.close();">${billContent}</body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
-    document.body.innerHTML = billContent;
-    window.print();
-    document.body.innerHTML = originalContent;
+  // Handle success modal close
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    setCompletedOrder(null);
+    // Ensure search term is cleared
+    setSearchTerm("");
   };
 
   return (
@@ -292,28 +337,46 @@ export default function Billing() {
                     {filteredProducts.map(product => {
                       const currentQty = cart.find(item => item.id === product.id)?.quantity || 0;
                       const remaining = product.stock - currentQty;
-                      const lowStock = remaining < 5;
+                      const isOutOfStock = remaining <= 0;
+                      const lowStock = remaining > 0 && remaining < 5;
+                      const restockMessage = product.restockDate
+                        ? `Restock expected: ${new Date(product.restockDate).toLocaleDateString()}`
+                        : "Restock date TBD";
                       return (
                         <div
                           key={product.id}
-                          className={`group border border-slate-200/50 p-4 rounded-xl hover:shadow-md transition-all duration-300 bg-white/50 backdrop-blur-sm relative overflow-hidden ${lowStock ? 'border-orange-300 bg-orange-50/50' : ''}`}
+                          className={`group border border-slate-200/50 p-4 rounded-xl hover:shadow-md transition-all duration-300 bg-white/50 backdrop-blur-sm relative overflow-hidden ${
+                            isOutOfStock ? 'opacity-60 bg-red-50/50 border-red-300' : lowStock ? 'border-orange-300 bg-orange-50/50' : ''
+                          }`}
                         >
-                          {lowStock && (
+                          {isOutOfStock && (
+                            <div className="absolute top-2 right-2">
+                              <FaExclamationTriangle className="w-4 h-4 text-red-500" />
+                            </div>
+                          )}
+                          {lowStock && !isOutOfStock && (
                             <div className="absolute top-2 right-2">
                               <FaExclamationTriangle className="w-4 h-4 text-orange-500" />
                             </div>
                           )}
                           <h4 className="font-semibold text-slate-900 mb-2 truncate">{product.name}</h4>
                           <p className="text-emerald-600 font-bold text-lg mb-3">{Number(product.price).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</p>
-                          <p className="text-sm text-slate-600 mb-4">Available: <span className={`font-medium ${lowStock ? 'text-orange-600' : 'text-slate-900'}`}>{remaining}</span></p>
+                          <p className="text-sm text-slate-600 mb-4">
+                            Available: <span className={`font-medium ${isOutOfStock ? 'text-red-600' : lowStock ? 'text-orange-600' : 'text-slate-900'}`}>{remaining}</span>
+                          </p>
+                          {isOutOfStock && (
+                            <p className="text-sm text-red-600 mb-4 font-medium">{restockMessage}</p>
+                          )}
                           <div className="flex gap-2 items-center">
                             <select
-                              className="border border-slate-300/50 px-3 py-2 rounded-xl text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all duration-200"
+                              className={`border border-slate-300/50 px-3 py-2 rounded-xl text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm transition-all duration-200 ${
+                                isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
                               defaultValue={1}
                               id={`qty-${product.id}`}
-                              disabled={isProcessing}
+                              disabled={isOutOfStock || isProcessing}
                             >
-                              {[...Array(Math.min(10, remaining)).keys()].map(n => (
+                              {[...Array(Math.min(10, remaining > 0 ? remaining : 1)).keys()].map(n => (
                                 <option key={n + 1} value={n + 1}>
                                   {n + 1}
                                 </option>
@@ -326,8 +389,8 @@ export default function Billing() {
                                   parseInt(document.getElementById(`qty-${product.id}`).value)
                                 )
                               }
-                              disabled={isProcessing}
-                              className="group flex items-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                              disabled={isOutOfStock || isProcessing}
+                              className={`group flex items-center gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0`}
                             >
                               <FaPlus className="w-3 h-3 group-hover:scale-110 transition-transform" />
                               Add
@@ -453,11 +516,9 @@ export default function Billing() {
           {/* Success Modal */}
           <Modal 
             show={showSuccessModal} 
-            onClose={() => {
-              setShowSuccessModal(false);
-              setCompletedOrder(null);
-            }} 
-            title="Order Completed Successfully!"
+            onClose={handleSuccessClose} 
+            title="Order Completed Successfully"
+            orderId={completedOrder?.id}
           >
             <div className="space-y-6">
               <div className="text-center py-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
@@ -466,10 +527,6 @@ export default function Billing() {
               </div>
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-slate-600 mb-1">Order ID:</p>
-                    <p className="font-semibold text-slate-900">#{completedOrder?.id}</p>
-                  </div>
                   <div>
                     <p className="text-slate-600 mb-1">Customer:</p>
                     <p className="font-medium text-slate-900">{completedOrder?.customer}</p>
@@ -494,8 +551,7 @@ export default function Billing() {
                 <button
                   onClick={() => {
                     printCompletedBill();
-                    setShowSuccessModal(false);
-                    setCompletedOrder(null);
+                    handleSuccessClose();
                   }}
                   className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
@@ -503,10 +559,7 @@ export default function Billing() {
                   Print Bill
                 </button>
                 <button
-                  onClick={() => {
-                    setShowSuccessModal(false);
-                    setCompletedOrder(null);
-                  }}
+                  onClick={handleSuccessClose}
                   className="px-6 py-3 text-slate-700 border border-slate-300/50 rounded-xl hover:bg-slate-50 transition-all duration-200 font-medium"
                 >
                   Close

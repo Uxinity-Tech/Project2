@@ -31,7 +31,10 @@ export default function Reports() {
   const orders = state.orders || [];
 
   // Total sales
-  const totalSales = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const totalSales = orders.reduce((sum, order) => {
+    const total = Number(order.total || 0);
+    return sum + (isNaN(total) ? 0 : total);
+  }, 0);
 
   // Total orders
   const totalOrders = orders.length;
@@ -47,9 +50,13 @@ export default function Reports() {
   const thisMonthSales = orders
     .filter(order => {
       const date = new Date(order.date);
-      return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
+      return date instanceof Date && !isNaN(date) &&
+             date.getMonth() === thisMonth && date.getFullYear() === thisYear;
     })
-    .reduce((sum, order) => sum + Number(order.total || 0), 0);
+    .reduce((sum, order) => {
+      const total = Number(order.total || 0);
+      return sum + (isNaN(total) ? 0 : total);
+    }, 0);
 
   const lastMonthDate = new Date(thisYear, thisMonth - 1);
   const lastMonth = lastMonthDate.getMonth();
@@ -58,14 +65,19 @@ export default function Reports() {
   const lastMonthSales = orders
     .filter(order => {
       const date = new Date(order.date);
-      return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
+      return date instanceof Date && !isNaN(date) &&
+             date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
     })
-    .reduce((sum, order) => sum + Number(order.total || 0), 0);
+    .reduce((sum, order) => {
+      const total = Number(order.total || 0);
+      return sum + (isNaN(total) ? 0 : total);
+    }, 0);
 
-  const revenueGrowth =
-    lastMonthSales === 0
-      ? thisMonthSales > 0 ? 100 : 0
-      : (((thisMonthSales - lastMonthSales) / lastMonthSales) * 100).toFixed(2);
+  const revenueGrowth = (() => {
+    if (thisMonthSales === 0 && lastMonthSales === 0) return 0; // No sales in either month
+    if (lastMonthSales === 0) return thisMonthSales > 0 ? 100 : 0; // No sales last month
+    return (((thisMonthSales - lastMonthSales) / lastMonthSales) * 100).toFixed(2);
+  })();
 
   const reportStats = [
     {
@@ -110,7 +122,7 @@ export default function Reports() {
     id: order.id,
     customer: order.customer,
     total: Number(order.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
-    date: order.date ? new Date(order.date).toLocaleDateString() : new Date().toLocaleDateString(),
+    date: order.date && !isNaN(new Date(order.date)) ? new Date(order.date).toLocaleDateString() : new Date().toLocaleDateString(),
   }));
 
   const exportToCSV = () => {
@@ -120,7 +132,7 @@ export default function Reports() {
       ...recentOrders.map(order => [
         order.id,
         order.customer,
-        order.total.replace(/[^\d.,]/g, ''), // Remove currency symbol for CSV
+        order.total.replace(/[^\d.,]/g, ''),
         order.date,
       ].join(","))
     ].join("\n");
@@ -148,9 +160,13 @@ export default function Reports() {
       const sales = orders
         .filter(order => {
           const orderDate = new Date(order.date);
-          return orderDate >= monthStart && orderDate <= monthEnd;
+          return orderDate instanceof Date && !isNaN(orderDate) &&
+                 orderDate >= monthStart && orderDate <= monthEnd;
         })
-        .reduce((sum, order) => sum + Number(order.total || 0), 0);
+        .reduce((sum, order) => {
+          const total = Number(order.total || 0);
+          return sum + (isNaN(total) ? 0 : total);
+        }, 0);
       return sales;
     });
     return { labels, data };
@@ -232,15 +248,14 @@ export default function Reports() {
         grid: {
           color: 'rgba(0, 0, 0, 0.05)',
         },
-    ticks: {
-  callback: function(value) {
-    return '₹' + value.toLocaleString('en-IN');
-  },
-  font: {
-    size: 12,
-  },
-},
-
+        ticks: {
+          callback: function(value) {
+            return '₹' + value.toLocaleString('en-IN');
+          },
+          font: {
+            size: 12,
+          },
+        },
       },
     },
     interaction: {
@@ -260,7 +275,6 @@ export default function Reports() {
       <div className="flex-1 flex flex-col">
         <Navbar />
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          {/* Header */}
           <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -283,8 +297,6 @@ export default function Reports() {
               </button>
             </div>
           </div>
-
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {reportStats.map((stat, index) => (
               <div
@@ -307,8 +319,6 @@ export default function Reports() {
               </div>
             ))}
           </div>
-
-          {/* Recent Sales Section */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-6 mb-8 overflow-hidden">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
@@ -361,8 +371,6 @@ export default function Reports() {
               </div>
             )}
           </div>
-
-          {/* Sales Trend Chart */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-6">
             <h3 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
               <FaChartLine className="w-5 h-5 text-indigo-500" />

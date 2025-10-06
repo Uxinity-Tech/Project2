@@ -16,23 +16,56 @@ export default function Orders() {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  const parseOrderDate = (dateStr) => {
+    if (!dateStr) return null;
+    let date;
+    if (dateStr.includes('-')) {
+      date = new Date(dateStr);
+    } else if (dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const year = parseInt(parts[2], 10);
+        date = new Date(year, month, day);
+      } else {
+        date = new Date(dateStr);
+      }
+    } else {
+      date = new Date(dateStr);
+    }
+    return isNaN(date.getTime()) ? null : date;
+  };
+
+  const getDateOnly = (date) => {
+    if (!date) return null;
+    const d = new Date(date);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  };
+
   // Map orders to match table keys
   const tableData = orders.map(order => ({
     id: order.id,
     customer: order.customer,
     total: Number(order.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
     status: order.status || "Completed",
-    date: order.date ? new Date(order.date).toLocaleDateString() : new Date().toLocaleDateString(),
+    date: parseOrderDate(order.date) ? parseOrderDate(order.date).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN'),
   }));
 
   const filteredOrdersRaw = orders.filter(order => {
-    const matchesSearch = order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = searchTerm === "" || 
+                          order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           order.id.toString().includes(searchTerm);
-    const matchesStatus = filterStatus === "All" || order.status === filterStatus;
-    const orderDate = new Date(order.date);
+    const matchesStatus = filterStatus.toLowerCase() === "all" || (order.status || "completed").toLowerCase() === filterStatus.toLowerCase();
+    const orderDate = parseOrderDate(order.date);
+    const isValidDate = orderDate !== null;
     const from = fromDate ? new Date(fromDate) : null;
     const to = toDate ? new Date(toDate) : null;
-    const matchesDate = !from || !to || (orderDate >= from && orderDate <= to);
+    const hasDateFilter = fromDate || toDate;
+    const orderDateOnly = getDateOnly(orderDate);
+    const fromOnly = fromDate ? getDateOnly(from) : null;
+    const toOnly = toDate ? getDateOnly(to) : null;
+    const matchesDate = !hasDateFilter || (isValidDate && ((!fromOnly || orderDateOnly >= fromOnly) && (!toOnly || orderDateOnly <= toOnly)));
     return matchesSearch && matchesStatus && matchesDate;
   });
 
@@ -41,10 +74,10 @@ export default function Orders() {
     customer: order.customer,
     total: Number(order.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }),
     status: order.status || "Completed",
-    date: order.date ? new Date(order.date).toLocaleDateString() : new Date().toLocaleDateString(),
+    date: parseOrderDate(order.date) ? parseOrderDate(order.date).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN'),
   }));
 
-  const statusOptions = ["All", ...new Set(orders.map(order => order.status || "Completed"))];
+  const statusOptions = ["All", ...Array.from(new Set(orders.map(order => order.status || "Completed")))];
 
   const exportToCSV = () => {
     const headers = ["ID", "Customer", "Total", "Status", "Date"];
@@ -205,10 +238,11 @@ export default function Orders() {
                   ) : (
                     filteredOrders.map((order) => {
                       const getStatusColor = (status) => {
-                        switch (status) {
-                          case "Completed": return { bg: "bg-green-100", text: "text-green-800" };
-                          case "Pending": return { bg: "bg-yellow-100", text: "text-yellow-800" };
-                          case "Cancelled": return { bg: "bg-red-100", text: "text-red-800" };
+                        const normalizedStatus = (status || "Completed").toLowerCase();
+                        switch (normalizedStatus) {
+                          case "completed": return { bg: "bg-green-100", text: "text-green-800" };
+                          case "pending": return { bg: "bg-yellow-100", text: "text-yellow-800" };
+                          case "cancelled": return { bg: "bg-red-100", text: "text-red-800" };
                           default: return { bg: "bg-gray-100", text: "text-gray-800" };
                         }
                       };
@@ -268,7 +302,8 @@ export default function Orders() {
           <Modal 
             show={showOrderModal} 
             onClose={() => setShowOrderModal(false)} 
-            title={`Order #${selectedOrder?.id || ''} Details`}
+            title="Order Details"
+            orderId={selectedOrder?.id}
           >
             {selectedOrder ? (
               <div className="space-y-6">
@@ -297,16 +332,16 @@ export default function Orders() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                     <div>
                       <p className="text-slate-600 mb-1">Date:</p>
-                      <p className="font-medium text-slate-900">{new Date(selectedOrder.date).toLocaleString()}</p>
+                      <p className="font-medium text-slate-900">{parseOrderDate(selectedOrder.date)?.toLocaleString('en-IN') || new Date().toLocaleString('en-IN')}</p>
                     </div>
                     <div>
                       <p className="text-slate-600 mb-1">Status:</p>
                       <span className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${
-                        selectedOrder.status === "Completed" ? "bg-green-100 text-green-800" :
-                        selectedOrder.status === "Pending" ? "bg-yellow-100 text-yellow-800" :
+                        (selectedOrder.status || "Completed").toLowerCase() === "completed" ? "bg-green-100 text-green-800" :
+                        (selectedOrder.status || "Completed").toLowerCase() === "pending" ? "bg-yellow-100 text-yellow-800" :
                         "bg-red-100 text-red-800"
                       }`}>
-                        {selectedOrder.status}
+                        {selectedOrder.status || "Completed"}
                       </span>
                     </div>
                     <div>
