@@ -37,16 +37,21 @@ export default function Inventory() {
     const edited = editingData[id];
     if (!edited) return;
 
-    // Validate required fields
-    if (!edited.name || isNaN(parseFloat(edited.mrp)) || isNaN(parseInt(edited.stock))) {
-      alert("Name, MRP, and Stock are required and must be valid.");
+    // Validate only edited fields
+    if (edited.name && edited.name.trim() === "") {
+      alert("Name cannot be empty if edited.");
       return;
     }
-
-    const parsedStockValue = parseFloat(edited.stockValue) || 0;
-
-    if (parsedStockValue < 0) {
-      alert("Stock Value must be non-negative.");
+    if (edited.mrp && (isNaN(parseFloat(edited.mrp)) || parseFloat(edited.mrp) < 0)) {
+      alert("MRP must be a valid non-negative number if edited.");
+      return;
+    }
+    if (edited.stock && (isNaN(parseInt(edited.stock)) || parseInt(edited.stock) < 0)) {
+      alert("Stock must be a valid non-negative number if edited.");
+      return;
+    }
+    if (edited.stockValue && (isNaN(parseFloat(edited.stockValue)) || parseFloat(edited.stockValue) < 0)) {
+      alert("Stock Value must be a valid non-negative number if edited.");
       return;
     }
 
@@ -54,11 +59,11 @@ export default function Inventory() {
       p.id === id
         ? {
             ...p,
-            name: edited.name || p.name,
-            originalRate: parseFloat(edited.originalRate) || p.originalRate || 0,
-            price: parseFloat(edited.mrp) || p.price || 0,
-            stock: parseInt(edited.stock) || p.stock || 0,
-            stockValue: parsedStockValue
+            name: edited.name !== undefined ? edited.name : p.name,
+            originalRate: edited.originalRate !== undefined ? parseFloat(edited.originalRate) || p.originalRate || 0 : p.originalRate || 0,
+            price: edited.mrp !== undefined ? parseFloat(edited.mrp) || p.price || 0 : p.price || 0,
+            stock: edited.stock !== undefined ? parseInt(edited.stock) || p.stock || 0 : p.stock || 0,
+            stockValue: edited.stockValue !== undefined ? parseFloat(edited.stockValue) || 0 : p.stockValue || 0
           }
         : p
     );
